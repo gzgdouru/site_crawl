@@ -6,7 +6,7 @@ from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.loader import ItemLoader
 
-from site_crawler.items import NovelItem, NovelDjangoItem
+from site_crawler.items import NovelItem, NovelDjangoItem, ChapterItem
 from site_crawler.utils import get_md5, get_author_by_biquge, get_category_by_biquge
 
 
@@ -22,7 +22,7 @@ class BiqugeSpider(CrawlSpider):
             'site_crawler.pipelines.NovelImagePipeline': 2,
             'site_crawler.pipelines.SaveItemPipeline': 3,
         },
-        "IMAGES_STORE": "/home/ouru/novels",
+        "IMAGES_STORE": "/home/ouru/novels/images",
         "IMAGES_URLS_FIELD": "image_url",
     }
 
@@ -61,8 +61,12 @@ class BiqugeSpider(CrawlSpider):
         yield item
 
     def parse_chapter(self, response):
-        i = {}
-        # i['domain_id'] = response.xpath('//input[@id="sid"]/@value').extract()
-        # i['name'] = response.xpath('//div[@id="name"]').extract()
-        # i['description'] = response.xpath('//div[@id="description"]').extract()
-        return i
+        item_loader = ItemLoader(item=ChapterItem(), response=response)
+        item_loader.add_value("url_id", get_md5(response.url))
+        item_loader.add_value("url", response.url)
+        item_loader.add_value("index", response.url)
+        item_loader.add_css("name", ".bookname h1::text")
+        item_loader.add_css("content", "#content")
+        item_loader.add_xpath("novel_name", "//div[@class='con_top']/a[2]/text()")
+        item = item_loader.load_item()
+        return item

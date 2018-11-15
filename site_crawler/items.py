@@ -58,3 +58,15 @@ class NovelItem(scrapy.Item):
 
 class NovelDjangoItem(DjangoItem):
     django_model = Novel
+
+
+class ChapterItem(scrapy.Item):
+    url_id = scrapy.Field(output_processor=TakeFirst())
+    url = scrapy.Field(output_processor=TakeFirst())
+    index = scrapy.Field()
+    name = scrapy.Field(output_processor=TakeFirst())
+    content = scrapy.Field()
+    novel_name = scrapy.Field(output_processor=TakeFirst())
+
+    def save_item(self):
+        pass

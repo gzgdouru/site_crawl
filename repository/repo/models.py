@@ -42,3 +42,18 @@ class Novel(models.Model):
 
     def __str__(self):
         return self.novel_name
+
+
+class Chapter(models.Model):
+    url_id = models.CharField(max_length=64, verbose_name="url唯一标识", primary_key=True)
+    url = models.CharField(max_length=255, verbose_name="章节链接", unique=True)
+    index = models.PositiveIntegerField(verbose_name="章节顺序", unique=True)
+    name = models.CharField(max_length=128, verbose_name="章节名称")
+    novel = models.ForeignKey(Novel, on_delete=models.CASCADE, verbose_name="所属小说")
+    add_time = models.DateTimeField(auto_now_add=True, verbose_name="添加时间")
+
+    class Meta:
+        db_table = "tb_chapter"
+
+    def __str__(self):
+        return self.name

@@ -50,6 +50,6 @@ class NovelImagePipeline(ImagesPipeline):
                 item["image_path"] = value["path"]
             else:
                 import logging
-                logger = logging.getLogger("NovelImagePipeline")
+                logger = logging.getLogger(NovelImagePipeline.__name__)
                 logger.error("下载图片({0})失败!".format(item["image_url"]))
         return item
