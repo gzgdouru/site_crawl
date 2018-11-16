@@ -22,3 +22,10 @@ def get_author_by_biquge(value):
         return match_obj.group(1)
     else:
         return ""
+
+
+def get_chapter_index_by_biquge(value):
+    match_obj = re.match(r'.*?/(\d+).html', value)
+    if match_obj:
+        return int(match_obj.group(1))
+    return 0

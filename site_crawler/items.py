@@ -9,8 +9,8 @@ import scrapy
 from scrapy.loader.processors import TakeFirst, MapCompose, Join, Identity
 from scrapy_djangoitem import DjangoItem
 
-from site_crawler.utils import get_category_by_biquge, get_author_by_biquge
-from repo.models import Novel, NovelCategory, NovelAuthor
+from site_crawler.utils import get_category_by_biquge, get_author_by_biquge, get_chapter_index_by_biquge
+from repo.models import Novel, NovelCategory, NovelAuthor, Chapter
 
 
 class SiteCrawlerItem(scrapy.Item):
@@ -36,7 +36,7 @@ class NovelItem(scrapy.Item):
             novel.url_id = self["url_id"]
             novel.url = self["url"]
             novel.image_url = ",".join(self["image_url"])
-            novel.image_path = self["image_path"]
+            novel.image_path = self.get("image_path", "")
             novel.site_name = self["site_name"]
             novel.novel_name = self["novel_name"]
 
@@ -63,10 +63,19 @@ class NovelDjangoItem(DjangoItem):
 class ChapterItem(scrapy.Item):
     url_id = scrapy.Field(output_processor=TakeFirst())
     url = scrapy.Field(output_processor=TakeFirst())
-    index = scrapy.Field()
+    index = scrapy.Field(input_processor=MapCompose(get_chapter_index_by_biquge), output_processor=TakeFirst())
     name = scrapy.Field(output_processor=TakeFirst())
-    content = scrapy.Field()
+    content = scrapy.Field(output_processor=TakeFirst())
     novel_name = scrapy.Field(output_processor=TakeFirst())
 
     def save_item(self):
-        pass
+        if not Chapter.objects.filter(url_id=self["url_id"]).exists():
+            chapter = Chapter()
+            chapter.url_id = self["url_id"]
+            chapter.url = self["url"]
+            chapter.index = self["index"]
+            chapter.name = self["name"]
+
+            novel = Novel.objects.filter(novel_name=self["novel_name"]).first()
+            chapter.novel = novel
+            chapter.save()
